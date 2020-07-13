@@ -69,4 +69,30 @@ let squareOptions = { colour: "red", width: 100 };
 let anotherSquare4 = createSquare(squareOptions);
 
 
+// 4. 函数类型
 
+// 对于函数类型的类型检查来说，函数的参数名不需要与接口里定义的名字相匹配。只要按照顺序类型符合即可。
+
+interface SearchFunc {
+  (source: string, subString: number): boolean;
+}
+let mySearch: SearchFunc;
+mySearch = function (src: string, sub: number): boolean {
+  return true
+}
+
+
+// 5. 可索引类型
+
+class Animal {
+  name: string;
+}
+class Dog extends Animal {
+  breed: string;
+}
+
+// 错误：使用数值型的字符串索引，有时会得到完全不同的Animal!
+interface NotOkay {
+  // [x: number]: Animal;
+  [x: string]: Dog;
+}
