@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <button onclick="download()">
+    下载
+  </button>
+
+  <input type="file" accept="image/*" onchange="handleChange(value)">
+
+  <img id="img" src="" alt="">
+
+  <script>
+    let debug = { name: 'aaaaa' }
+    let str = JSON.stringify(debug);
+    let blob = new Blob([str], { type: 'application/json' })
+    console.log('blob.size', blob.size)
+
+    function readBlob(blob, type) {
+      return new Promise(function(res) {
+        let reader = new FileReader()
+        reader.onload = function(event) {
+          res(event.target.result)
+        }
+        switch(type) {
+          case 'ArrayBuffer':
+            reader.readAsArrayBuffer(blob);
+            break;
+          case 'DataUrl':
+            reader.readAsDataURL(blob);
+            break;
+          default:
+            break;
+        }
+      })
+    }
+
+    readBlob(blob, 'ArrayBuffer').then(result => console.log(result))
+    readBlob(blob, 'DataUrl').then(result => console.log(result))
+  </script>
+
+  <script>
+    function download() {
+      let debug = { name: 'aaaaa' }
+      let str = JSON.stringify(debug);
+      let blob = new Blob([str], { type: 'application/json' });
+      let a = document.createElement('a')
+      a.download = 'user.json';
+      a.rel = 'noopener';
+      a.href = URL.createObjectURL(blob);
+      a.dispatchEvent(new MouseEvent('click'));
+      URL.revokeObjectURL(blob); // 销毁objectUrl和blob 防止内存泄露
+    }
+  </script>
+
+  <script>
+    function handleChange(value) {
+      console.log(value, 'value')
+      let file = event.target.files[0];
+      let fileReader = new FileReader();
+      fileReader.onload = event => {
+        
+        console.log(file);
+        console.log(event.target.result);
+        let img = document.getElementById('img');
+        img.src = event.target.result;
+      }
+      fileReader.readAsDataURL(file);
+    }
+  </script>
+
+  <script>
+    function drawImage() {
+      let ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 300, 300);
+      let imageWidth = image.width;
+      let imageHeight = image.height;
+      // 缩放的代码
+      ctx.drawImage()
+    }
+  </script>
+
+  <div style="position: relative;">
+    <canvas 
+      width="300px"
+      height="300px"
+    />
+    <div style="position: absolute; background-color: bisque; width: 100px; height: 100px; top: 100px; left: 100px;"></div>
+  </div>
+  
+  <script>
+    function upload(event) {
+      let bytes = atob(this.state.avatarDataUrl.split(',')[1]);
+
+    }
+  </script>
+
+</body>
+</html>
