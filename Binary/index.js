@@ -25,5 +25,3 @@ console.log('dataView.getInt16(0)', dataView.getInt16(0));
 
 
 
-// 4. Blob
-
