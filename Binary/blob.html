@@ -10,7 +10,7 @@
 
   <input type="file" accept="image/*" onchange="handleChange(value)">
   
-  <div onmousedown="onMouseDown()" style="margin-top: 40px; clear: both; overflow: hidden;">
+  <div onmousedown="onMouseDown(event)" onmouseup="onMouseUp(event)" onmousemove="onMouseMove(event)" style="margin-top: 40px; clear: both; overflow: hidden;">
     <div style="float: left; width: 300px;">
       <div>原图</div>
       <img width="300" height="auto" id="img" src="" alt="" onload="drawImage()" />
@@ -27,8 +27,12 @@
       <div>
         <button onclick="bigger()">变大</button>
         <button onClick="smaller()">变小</button>
-        <button>剪切</button>
+        <button onclick="clip()">剪切</button>
       </div>
+    </div>
+    <div style="position: relative; float: left; margin-left: 20px;">
+      <div>截取的图片</div>
+      <img id="clip" src="" alt="" width="100" height="100" />
     </div>
   </div>
   
@@ -59,7 +63,7 @@
     readBlob(blob, 'ArrayBuffer').then(result => console.log(result));
     readBlob(blob, 'DataUrl').then(result => console.log(result));
 
-
+    // 下载功能
     function download() {
       let debug = { name: 'aaaaa' }
       let str = JSON.stringify(debug);
@@ -72,15 +76,12 @@
       URL.revokeObjectURL(blob); // 销毁objectUrl和blob 防止内存泄露
     }
 
-
+    // 上传图片
     function handleChange(value) {
       console.log(value, 'value')
       let file = event.target.files[0];
       let fileReader = new FileReader();
       fileReader.onload = event => {
-        
-        console.log(file);
-        console.log(event.target.result);
         let img = document.getElementById('img');
         img.src = event.target.result;
       }
@@ -88,11 +89,13 @@
     }
 
 
-    function drawImage(timeNumber) {
+    function drawImage(timeNumber, positionX, positionY) {
       let canvas = document.getElementById('canvas');
       let ctx = canvas.getContext('2d');
       let img = document.getElementById('img');
       let times = timeNumber || 1;
+      let posX = positionX || 0;
+      let posY = positionY || 0;
       ctx.clearRect(0, 0, canvas.width, 300);
       let imageWidth = img.width;
       let imageHeight = img.height;
@@ -106,38 +109,57 @@
         imageHeight = imageHeight * scale * times;
         imageWidth = canvas.width * times;
       }
-      ctx.drawImage(img, (canvas.width - imageWidth) / 2, (canvas.height - imageHeight) / 2, imageWidth, imageHeight);
+      ctx.drawImage(img, (canvas.width - imageWidth) / 2 + posX, (canvas.height - imageHeight) / 2 + posY, imageWidth, imageHeight);
     }
 
-
+    // 设置初始值
     let timeNumber = 1;
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let drag = false;
+
+    // 实现图片放大缩小及拖拽功能
     function bigger() {
       timeNumber = timeNumber * 1.1;
-      drawImage(timeNumber);
+      drawImage(timeNumber, lastX, lastY);
     }
     function smaller() {
       timeNumber = timeNumber * 0.9;
-      drawImage(timeNumber);
+      drawImage(timeNumber, lastX, lastY);
     }
-
-
-    let startX;
-    let startY;
-    let lastX;
-    let lastY;
     function onMouseDown(e) {
-      console.log(e, 'event');
+      startX = e.clientX;
+      startY = e.clientY;
+      drag = true;
+    }
+    function onMouseUp(e) {
+      lastX = lastX + e.clientX - startX;
+      lastY = lastY + e.clientY - startY;
+      drag = false;
+    }
+    function onMouseMove(e) {
+      if (drag) {
+        let posX = lastX + e.clientX - startX;
+        let posY = lastY + e.clientY - startY;
+        drawImage(timeNumber, posX, posY);
+      }
+    }
+    function clip() {
+      let canvas = document.getElementById('canvas');
+      let ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(100, 100, 100, 100);
+      let anotherCanvas = document.createElement('canvas');
+      anotherCanvas.width=100;
+      anotherCanvas.height=100;
+      let anotherCtx = anotherCanvas.getContext('2d');
+      anotherCtx.putImageData(imageData,0,0);
+      let avatarDataUrl= anotherCanvas.toDataURL();
+      let clipImage = document.getElementById('clip');
+      clipImage.src = avatarDataUrl; 
     }
 
-
-    function onMouseUp() {
-
-    }
-
-
-    function onMouseMove() {
-
-    }
 
   </script>
 
